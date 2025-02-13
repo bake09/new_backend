@@ -54,10 +54,11 @@ class TodoController extends Controller
         
         $request->validate([
             'content' => 'sometimes|required|string|max:255',
-            'done' => 'sometimes|required|boolean'
+            'done' => 'sometimes|required|boolean',
+            'due_date' => 'sometimes|required|date'
         ]);
 
-        $todo->update($request->only(['content', 'done']));
+        $todo->update($request->only(['content', 'done', 'due_date']));
 
         return new TodoResource($todo);
     }
