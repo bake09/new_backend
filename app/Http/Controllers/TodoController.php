@@ -10,8 +10,9 @@ use App\Events\TodoToggle;
 
 use Illuminate\Http\Request;
 
-use App\Http\Resources\TodoResource;
+use Illuminate\Support\Carbon;
 
+use App\Http\Resources\TodoResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
@@ -32,7 +33,10 @@ class TodoController extends Controller
             'content' => 'required|string|max:255',
         ]);
 
+        $dueDate = Carbon::now()->addWeek(); // Setzt due_date auf 7 Tage später
+        
         $todo = Todo::create([
+            'due_date' => $dueDate, // due_date on-the-fly erstellen
             'content' => $request->content,
             'user_id' =>  Auth::user()->id
         ]);
