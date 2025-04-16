@@ -63,6 +63,7 @@ class TodoController extends Controller
         ]);
 
         $todo->update($request->only(['content', 'done', 'due_date']));
+        TodoToggle::dispatch($todo->load('user'));
 
         return new TodoResource($todo);
     }

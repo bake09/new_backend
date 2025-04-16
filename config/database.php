@@ -111,6 +111,19 @@ return [
             // 'encrypt' => env('DB_ENCRYPT', 'yes'),
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
+        'odbc_intern' => [
+            'driver'   => 'odbc',
+            'dsn'      => env('ODBC_DSN_STRING_PHP8'),
+            'database' => env('ODBC_DATABASE'),
+            'username' => 'odbc',
+            'password' => env('ODBC_PASSWORD'),
+            'charset' => 'utf8',
+            'collation' => 'utf8_unicode_ci', // NEU 24.02.2025
+            'grammar' => [
+                'query' => Illuminate\Database\Query\Grammars\SqlServerGrammar::class,
+                'schema' => Illuminate\Database\Schema\Grammars\SqlServerGrammar::class,
+            ],
+        ],
 
     ],
 
