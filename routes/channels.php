@@ -19,6 +19,10 @@ Broadcast::channel('users.1', function ($user) {
     ];
 });
 
+Broadcast::channel('game.{gameId}', function (User $user, $gameId) {
+    return true; // Erlaubt allen Benutzern, den Kanal zu abonnieren
+});
+
 Broadcast::channel('roles.{roleId}', function (User $user, $roleId) {
     // Überprüfe, ob der Benutzer die Rolle hat
     $role = Role::find($roleId);
