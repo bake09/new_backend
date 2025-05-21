@@ -32,7 +32,7 @@ class ImageController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'images.*' => 'required|image|max:2048', // Validiert die hochgeladenen Bilder
+            'images.*' => 'required|image|max:10000', // Validiert die hochgeladenen Bilder
         ]);
 
         $user = $request->user(); // Authentifizierter Benutzer

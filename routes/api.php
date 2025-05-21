@@ -11,6 +11,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ImageController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\Auth\AuthTokenController;
+use App\Http\Controllers\NotificationManagerController;
 
 use App\Models\Customer;
 
@@ -31,6 +32,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('team', TeamController::class);
     Route::post('roles/{role}/permissions', [PermissionController::class, 'assignPermissions']);
     Route::delete('roles/{role}/permissions/{permission}', [PermissionController::class, 'removePermission']);
+
+    // Notifications
+    Route::post('/notifications/subscribe', [NotificationManagerController::class, 'subscribe']);
+    Route::post('/notifications/unsubscribe', [NotificationManagerController::class, 'unsubscribe']);
 });
 
 Route::prefix('auth/token')->group(function () {

@@ -16,6 +16,8 @@ use App\Http\Resources\TodoResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
+use App\Notifications\TodoCreated;
+
 class TodoController extends Controller
 {
     public function index()
@@ -40,6 +42,9 @@ class TodoController extends Controller
             'content' => $request->content,
             'user_id' =>  Auth::user()->id
         ]);
+
+        $request->user()->notify(new TodoCreated($todo));
+        
         broadcast(new TodoSend($todo->load('user')))->toOthers();
 
         return new TodoResource($todo->load('user'));
