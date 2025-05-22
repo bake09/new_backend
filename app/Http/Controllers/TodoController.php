@@ -4,19 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\Todo;
 
+use App\Models\User;
 use App\Events\TodoSend;
 use App\Events\TodoDelete;
+
 use App\Events\TodoToggle;
 
 use Illuminate\Http\Request;
 
 use Illuminate\Support\Carbon;
-
+use App\Notifications\TodoCreated;
 use App\Http\Resources\TodoResource;
+
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
-
-use App\Notifications\TodoCreated;
+use Illuminate\Support\Facades\Notification;
 
 class TodoController extends Controller
 {
@@ -43,7 +45,12 @@ class TodoController extends Controller
             'user_id' =>  Auth::user()->id
         ]);
 
-        $request->user()->notify(new TodoCreated($todo));
+        // Benutzer mit aktiven Subscriptions abrufen
+        $usersWithSubscriptions = User::whereHas('pushSubscriptions')->get();
+
+        // Benachrichtigung senden
+        Notification::send($usersWithSubscriptions, new TodoCreated($todo));
+        // $request->user()->notify(new TodoCreated($todo));
         
         broadcast(new TodoSend($todo->load('user')))->toOthers();
 

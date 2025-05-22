@@ -1,19 +1,21 @@
 <?php
 
-use Illuminate\Support\Facades\DB;
+use App\Models\User;
 
-use Illuminate\Support\Facades\Route;
+use App\Models\Customer;
 use Illuminate\Http\Request;
 
+use App\Notifications\TodoCreated;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TodoController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ImageController;
+
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\Auth\AuthTokenController;
 use App\Http\Controllers\NotificationManagerController;
-
-use App\Models\Customer;
 
 Route::middleware(['auth:sanctum'])->group(function () {
     // Auth Token!
@@ -36,6 +38,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Notifications
     Route::post('/notifications/subscribe', [NotificationManagerController::class, 'subscribe']);
     Route::post('/notifications/unsubscribe', [NotificationManagerController::class, 'unsubscribe']);
+
 });
 
 Route::prefix('auth/token')->group(function () {

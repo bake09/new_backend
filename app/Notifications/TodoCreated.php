@@ -8,7 +8,6 @@ use NotificationChannels\WebPush\WebPushChannel;
 
 class TodoCreated extends Notification
 {
-
     protected $todo;
 
     public function __construct($todo)

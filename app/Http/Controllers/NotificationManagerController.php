@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Todo;
 use Illuminate\Http\Request;
+use App\Notifications\TodoCreated;
 use Illuminate\Support\Facades\Auth;
 
 class NotificationManagerController extends Controller
