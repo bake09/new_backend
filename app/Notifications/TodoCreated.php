@@ -25,7 +25,7 @@ class TodoCreated extends Notification
     public function toWebPush($notifiable, $notification)
     {
         return (new WebPushMessage)
-            ->title('Neues Todo von :' . $this->sender)
+            ->title('Neues Todo von : ' . $this->sender)
             ->icon('/icon.png') // Pfad zum Icon
             ->body("{$this->todo->content}")
             ->action('Ansehen', 'view_app');
