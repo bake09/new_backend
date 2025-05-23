@@ -9,10 +9,12 @@ use NotificationChannels\WebPush\WebPushChannel;
 class TodoCreated extends Notification
 {
     protected $todo;
+    protected $sender;
 
-    public function __construct($todo)
+    public function __construct($todo, $sender)
     {
         $this->todo = $todo;
+        $this->sender = $sender;
     }
 
     public function via($notifiable)
@@ -23,7 +25,7 @@ class TodoCreated extends Notification
     public function toWebPush($notifiable, $notification)
     {
         return (new WebPushMessage)
-            ->title('Neues Todo erstellt')
+            ->title('Neues Todo von :' . $this->sender)
             ->icon('/icon.png') // Pfad zum Icon
             ->body("{$this->todo->content}")
             ->action('Ansehen', 'view_app');

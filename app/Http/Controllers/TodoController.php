@@ -49,7 +49,7 @@ class TodoController extends Controller
         $usersWithSubscriptions = User::whereHas('pushSubscriptions')->get();
 
         // Benachrichtigung senden
-        Notification::send($usersWithSubscriptions, new TodoCreated($todo));
+        Notification::send($usersWithSubscriptions, new TodoCreated($todo, Auth::user()->name));
         // $request->user()->notify(new TodoCreated($todo));
         
         broadcast(new TodoSend($todo->load('user')))->toOthers();
