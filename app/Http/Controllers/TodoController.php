@@ -22,11 +22,17 @@ use Illuminate\Support\Facades\Notification;
 
 class TodoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         Gate::authorize('read_todo');
-        
-        return TodoResource::collection(Todo::with('user')->get());
+
+        $perPage = $request->get('per_page', 15); // Standard: 5 pro Seite, kann vom Frontend überschrieben werden
+
+        $todos = Todo::with('user')
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
+
+        return TodoResource::collection($todos);
     }
 
     public function store(Request $request)

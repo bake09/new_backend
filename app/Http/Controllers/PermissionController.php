@@ -17,21 +17,22 @@ class PermissionController extends Controller
 
         // Gruppiere die Berechtigungen nach dem Schlüssel nach dem Unterstrich
         $groupedPermissions = [];
-        foreach ($permissions as $permission) {
-            // Teile den Namen am Unterstrich
-            $parts = explode('_', $permission->name);
-            if (count($parts) > 1) {
-                $key = $parts[1]; // Der Schlüssel ist der Teil nach dem Unterstrich
-                if (!isset($groupedPermissions[$key])) {
-                    $groupedPermissions[$key] = [];
-                }
-                $groupedPermissions[$key][] = $permission;
-            }
-        }
+        // foreach ($permissions as $permission) {
+        //     // Teile den Namen am Unterstrich
+        //     $parts = explode('_', $permission->name);
+        //     if (count($parts) > 1) {
+        //         $key = $parts[1]; // Der Schlüssel ist der Teil nach dem Unterstrich
+        //         if (!isset($groupedPermissions[$key])) {
+        //             $groupedPermissions[$key] = [];
+        //         }
+        //         $groupedPermissions[$key][] = $permission;
+        //     }
+        // }
 
         return response()->json([
             'roles' => $roles,
-            'permissions' => $groupedPermissions,
+            'permissions' => $permissions,
+            // 'permissions' => $groupedPermissions,
         ]);
     }
 

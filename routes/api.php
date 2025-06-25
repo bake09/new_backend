@@ -13,6 +13,7 @@ use App\Http\Controllers\TodoController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ImageController;
 
+use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\Auth\AuthTokenController;
 use App\Http\Controllers\NotificationManagerController;
@@ -39,6 +40,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/notifications/subscribe', [NotificationManagerController::class, 'subscribe']);
     Route::post('/notifications/unsubscribe', [NotificationManagerController::class, 'unsubscribe']);
 
+    // Vehicle
+    Route::apiResource('vehicle', VehicleController::class);
 });
 
 Route::prefix('auth/token')->group(function () {
