@@ -10,29 +10,14 @@ use Illuminate\Support\Facades\Validator;
 
 class PermissionController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
         $roles = Role::with('permissions')->get();
         $permissions = Permission::with('roles')->get();
 
-        // Gruppiere die Berechtigungen nach dem Schlüssel nach dem Unterstrich
-        $groupedPermissions = [];
-        // foreach ($permissions as $permission) {
-        //     // Teile den Namen am Unterstrich
-        //     $parts = explode('_', $permission->name);
-        //     if (count($parts) > 1) {
-        //         $key = $parts[1]; // Der Schlüssel ist der Teil nach dem Unterstrich
-        //         if (!isset($groupedPermissions[$key])) {
-        //             $groupedPermissions[$key] = [];
-        //         }
-        //         $groupedPermissions[$key][] = $permission;
-        //     }
-        // }
-
         return response()->json([
             'roles' => $roles,
             'permissions' => $permissions,
-            // 'permissions' => $groupedPermissions,
         ]);
     }
 
@@ -150,4 +135,55 @@ class PermissionController extends Controller
             'role' => $role->load('permissions'),
         ]);
     }
+
+    public function updateRole(Role $role, Request $request)
+    {
+        $permissionNames = collect($request->permissions)->pluck('name');
+
+        // Validierung der Eingabedaten
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|unique:roles,name,' . $role->id,
+            // 'permissions' => 'nullable|array',
+            // 'permissions.*' => 'exists:permissions,name',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        // // Rolle aktualisieren
+        $role->name = $request->name;
+        $role->save();
+
+        // Berechtigungen synchronisieren, falls vorhanden
+        if ($request->has('permissions')) {
+            $role->syncPermissions($permissionNames);
+        }
+        broadcast(new RolePermissionsUpdated($role))->toOthers();
+
+        return response()->json([
+            'message' => 'Role updated successfully!',
+            'role' => $role->load('permissions'),
+        ]);
+    }
+
+    public function addPermission(Request $request)
+    {
+        // Validierung der Eingabedaten
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|unique:permissions,name',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        // Berechtigung erstellen
+        $permission = Permission::create(['name' => $request->name]);
+
+        return response()->json([
+            'message' => 'Permission created successfully!',
+            'permission' => $permission,
+        ], 201);
+    }   
 }

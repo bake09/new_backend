@@ -26,8 +26,8 @@ class RolePermissionsUpdated implements ShouldBroadcastNow
 
     public function broadcastOn(): Channel
     {
-        // return new Channel('roles');
-        return new PrivateChannel('roles.' . $this->role->id);
+        return new Channel('roles');
+        // return new PrivateChannel('roles.' . $this->role->id);
     }
 
     public function broadcastWith(): array

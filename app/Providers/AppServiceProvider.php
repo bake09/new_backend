@@ -32,7 +32,7 @@ class AppServiceProvider extends ServiceProvider
         Carbon::setLocale('de');
 
         Gate::define('create_todo', fn(User $user) => $user->hasPermissionTo('create_todo'));
-        Gate::define('read_todo', fn(User $user) => $user->hasPermissionTo('read_todo'));
+        Gate::define('read_todo',   fn(User $user) => $user->hasPermissionTo('read_todo'));
         Gate::define('update_todo', fn(User $user) => $user->hasPermissionTo('update_todo'));
         Gate::define('delete_todo', fn(User $user) => $user->hasPermissionTo('delete_todo'));
     }

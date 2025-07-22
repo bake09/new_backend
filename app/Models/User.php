@@ -14,6 +14,12 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasRoles, HasPushSubscriptions, HasApiTokens;
 
+     protected $guard_name = 'api';
+
+    protected function getDefaultGuardName(): string
+    {
+        return $this->guard_name;
+    }
     /**
      * The attributes that are mass assignable.
      *

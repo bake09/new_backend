@@ -23,27 +23,25 @@ class DatabaseSeeder extends Seeder
         // TEAM
         Team::create(['name' => 'Ökke']);
 
-
-
         // ROLE and PERMISSIONS
 
         // clear Roles and Permissions CACHE
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
+        // create roles and assign created permissions
+        $superadminRole = Role::create(['name' => 'superadmin', 'guard_name' => 'api']);
+        $adminRole = Role::create(['name' => 'admin', 'guard_name' => 'api']);
+        $userRole = Role::create(['name' => 'user', 'guard_name' => 'api']);
 
         // create permissions
-        $userPermissionCreate   =   Permission::create(['name' => 'create_todo']);
-        $userPermissionRead     =   Permission::create(['name' => 'read_todo']);
-        $userPermissionUpdate   =   Permission::create(['name' => 'update_todo']);
-        $adminPermissionDelete  =   Permission::create(['name' => 'delete_todo']);
+        $userPermissionCreate   =   Permission::create(['name' => 'create_todo', 'guard_name' => 'api']);
+        $userPermissionRead     =   Permission::create(['name' => 'read_todo', 'guard_name' => 'api']);
+        $userPermissionUpdate   =   Permission::create(['name' => 'update_todo', 'guard_name' => 'api']);
+        $adminPermissionDelete  =   Permission::create(['name' => 'delete_todo', 'guard_name' => 'api']);
 
-        // create roles and assign created permissions
-        $adminRole = Role::create(['name' => 'admin']);
-        $adminRole->syncPermissions($userPermissionCreate, $userPermissionRead, $userPermissionUpdate, $adminPermissionDelete);
-        
-        $userRole = Role::create(['name' => 'user']);
-        $userRole->syncPermissions($userPermissionRead, $userPermissionCreate, $userPermissionUpdate);
-
+        $superadminRole->syncPermissions($userPermissionCreate, $userPermissionRead, $userPermissionUpdate, $adminPermissionDelete);
+        $adminRole->syncPermissions($userPermissionCreate, $userPermissionRead, $userPermissionUpdate);
+        $userRole->syncPermissions($userPermissionRead, $userPermissionCreate);
 
         // USERS
         $user1 = User::factory()->create([
@@ -64,10 +62,9 @@ class DatabaseSeeder extends Seeder
             'email' => 'test3@test.com',
             'avatar' => 'storage/avatars/avatar_3.jpg',
         ]);
-        $user1->assignRole('admin');
-        $user2->assignRole('user');
+        $user1->assignRole('superadmin');
+        $user2->assignRole('admin');
         $user3->assignRole('user');
-
 
         // TODO's
         Todo::factory()->create(['content' => 'Todo 1', 'user_id' => '1']);

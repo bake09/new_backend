@@ -36,6 +36,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('roles/{role}/permissions', [PermissionController::class, 'assignPermissions']);
     Route::delete('roles/{role}/permissions/{permission}', [PermissionController::class, 'removePermission']);
 
+    // NEW
+    Route::patch('roles/{role}/updateRole', [PermissionController::class, 'updateRole']);
+    Route::post('addPermission', [PermissionController::class, 'addPermission']);
+
     // Notifications
     Route::post('/notifications/subscribe', [NotificationManagerController::class, 'subscribe']);
     Route::post('/notifications/unsubscribe', [NotificationManagerController::class, 'unsubscribe']);
