@@ -17,6 +17,7 @@ use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\Auth\AuthTokenController;
 use App\Http\Controllers\NotificationManagerController;
+use Spatie\Permission\Contracts\Role;
 
 Route::middleware(['auth:sanctum'])->group(function () {
     // Auth Token!
@@ -25,6 +26,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Resources
     Route::apiResource('/images', ImageController::class);
     Route::apiResource('user', UserController::class);
+    Route::patch('user/{user}/assignRole', [UserController::class, 'assignRole']);
 
     // Todo
     Route::apiResource('todo', TodoController::class);
@@ -37,8 +39,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::delete('roles/{role}/permissions/{permission}', [PermissionController::class, 'removePermission']);
 
     // NEW
-    Route::patch('roles/{role}/updateRole', [PermissionController::class, 'updateRole']);
     Route::post('addPermission', [PermissionController::class, 'addPermission']);
+    Route::patch('roles/{role}/updateRole', [PermissionController::class, 'updateRole']);
 
     // Notifications
     Route::post('/notifications/subscribe', [NotificationManagerController::class, 'subscribe']);

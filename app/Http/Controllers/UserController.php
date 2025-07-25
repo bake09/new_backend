@@ -35,4 +35,16 @@ class UserController extends Controller
     {
         //
     }
+
+    public function assignRole(Request $request, User $user)
+    {
+        $role = $request->input('role');
+        return $role;
+        if ($user->hasRole($role)) {
+            return response()->json(['message' => 'User already has this role'], 400);
+        }
+
+        $user->assignRole($role);
+        return response()->json(['message' => 'Role assigned successfully']);
+    }
 }
