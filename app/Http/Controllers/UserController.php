@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Resources\UserResource;
+use App\Events\RolePermissionsUpdated;
 
 class UserController extends Controller
 {
@@ -39,12 +40,26 @@ class UserController extends Controller
     public function assignRole(Request $request, User $user)
     {
         $role = $request->input('role');
-        return $role;
-        if ($user->hasRole($role)) {
-            return response()->json(['message' => 'User already has this role'], 400);
-        }
+        // return $user;
+        
+        $roleId = $request->input('role');
 
-        $user->assignRole($role);
-        return response()->json(['message' => 'Role assigned successfully']);
+        // Alle Rollen entfernen
+        $user->roles()->detach();
+        // $user->syncRoles([]);
+
+        // Neue Rolle zuweisen (per ID)
+        $user->roles()->attach($roleId);
+
+        // Optional: User neu laden mit Rollen
+        // $user->load('roles');
+
+        
+        broadcast(new RolePermissionsUpdated($role))->toOthers();
+
+        return response()->json([
+            'message' => 'Role assigned successfully',
+            'user' => new UserResource($user)
+        ]);
     }
 }
