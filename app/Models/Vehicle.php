@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class Vehicle extends Model
 {
     // Angabe des Tabellennamens, falls er nicht dem Laravel-Naming entspricht
-    protected $table = 'VEHICLE as v';
+    protected $table = 'VEHICLE';
+    // protected $table = 'VEHICLE as v';
 
     // Verbindung definieren, falls eine andere als die Standard-Datenbank verwendet wird
     protected $connection = 'odbc_intern';
@@ -16,7 +17,7 @@ class Vehicle extends Model
     public $timestamps = false;
 
     // Falls ein anderer Primärschlüssel als "id" verwendet wird
-    protected $primaryKey = 'BASIS_NUMBER';
+    // protected $primaryKey = 'BASIS_NUMBER';
 
     // Cast für unterschiedliche Dates – immer als Y-m-d
     protected $casts = [

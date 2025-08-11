@@ -2,22 +2,39 @@
 
 use App\Models\User;
 
+use App\Models\Vehicle;
 use App\Models\Customer;
-use Illuminate\Http\Request;
 
+use Illuminate\Http\Request;
 use App\Notifications\TodoCreated;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use Spatie\Permission\Contracts\Role;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TodoController;
+
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ImageController;
-
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\Auth\AuthTokenController;
 use App\Http\Controllers\NotificationManagerController;
-use Spatie\Permission\Contracts\Role;
+use App\Models\Todo;
+
+
+function utf8_fit($v) {
+    if (is_string($v) && !mb_check_encoding($v, 'UTF-8')) {
+        return mb_convert_encoding($v, 'UTF-8', 'Windows-1252');
+    }
+    if (is_array($v)) {
+        return array_map('utf8_fit', $v);
+    }
+    return $v;
+}
+
+function trim_data(array $data): array {
+    return array_map(fn ($v) => is_string($v) ? trim($v) : $v, $data);
+}
 
 Route::middleware(['auth:sanctum'])->group(function () {
     // Auth Token!
@@ -57,7 +74,7 @@ Route::prefix('auth/token')->group(function () {
 });
 
 Route::get('test', function() {
-    return "test";
+    return 'test Sring';
 });
 
 Route::get('findappointment', function(){
@@ -73,7 +90,7 @@ Route::get('findappointment', function(){
 });
 
 Route::post('/check-email', function(Request $request) {
-    
+
     $request->validate([
         'email' => 'required|email'
     ]);
@@ -94,17 +111,7 @@ Route::post('/check-email', function(Request $request) {
         ->whereRaw('E_MAIL_ADDRESS = ?', [$email])
         ->get();
 
-    $trimmedCustomers = $customers->map(function($customer) {
-        $customerArray = $customer->toArray();
-        array_walk_recursive($customerArray, function(&$value) {
-            if (is_string($value)) {
-                $value = trim($value);
-            }
-        });
-        return $customerArray;
-    });
+        $data = $customers->toArray();
 
-    return $trimmedCustomers->isNotEmpty() 
-        ? response()->json($trimmedCustomers, 200, [], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_IGNORE)
-        : response()->json(['error' => 'Not found'], 404);
+        return response()->json(utf8_fit($data), 200, [], JSON_UNESCAPED_UNICODE);
 });

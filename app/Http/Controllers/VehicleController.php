@@ -8,88 +8,117 @@ use Illuminate\Support\Facades\DB;
 
 class VehicleController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        ini_set('memory_limit', '2G');
-        $basisNumber = '0011YFN9';
-        
-                $vehicles = Vehicle::select(
-                    // [
-                    //     'BASIS_NUMBER as BASIS_NUMBER',
-                    //     'TRANSACT_DATE as TRANSACT_DATE',
-                    //     'CHASSIS_NUMBER as CHASSIS_NUMBER',
-                    //     'REGISTER_NUMBER as REGISTER_NUMBER',
-                    // ]
-                )
-                // ->whereRaw('BASIS_NUMBER = ?', [$basisNumber])
-                ->orderBy('TRANSACT_DATE', 'desc') // neueste zuerst
-                ->limit(100)
-                ->get();
+        $query = Vehicle::query()
+            ->from('VEHICLE as v')
+            ->leftJoin('UNIT_FILE as u', 'v.BASIS_NUMBER', '=', 'u.BASIS_NUMBER')
+            ->join('vPP5L as s', 'u.ECC_STATUS', '=', 's.CAR_STATUS')
+            ->join('vPP5Q as m', function($join) {
+                $join->on('v.MODEL_LINE', '=', 'm.MODEL_LINE')
+                    ->on('v.MAKE_CD', '=', 'm.MAKE_CD');
+            })
+            // ->where('u.CAR_CREATION_DATE', '>', '2023-01-01')
+            ->where('v.REGISTER_NUMBER', '=', 'LB-DB 1216')
+            ;
 
-        $trimmedVehicles = $vehicles->map(function($vehicle) {
-            $vehicleArray = $vehicle->toArray();
-            array_walk_recursive($vehicleArray, function(&$value) {
+        // Optional: Filter anwenden, falls gesetzt
+        $query->when(
+            $request->filled('MAKE_CD'),
+            fn ($q) => $q->whereIn('m.MAKE_CD', (array) $request->input('MAKE_CD'))
+        );
+        $query->when(
+            $request->filled('ECC_STATUS'),
+            fn ($q) => $q->whereIn('u.ECC_STATUS', (array) $request->input('ECC_STATUS'))
+        );
+        $query->when(
+            $request->filled('SPECIFY'),
+            fn ($q) => $q->whereIn('s.SPECIFY', (array) $request->input('SPECIFY'))
+        );
+
+        // $query->when($request->filled('model_line'), fn($q) => $q->where('m.MODEL_LINE', $request->model_line));
+        // $query->when($request->filled('ecc_status'), fn($q) => $q->where('u.ECC_STATUS', $request->ecc_status));
+
+        // Haupt-Abfrage mit Pagination
+        $vehicles = $query->select([
+            'm.MAKE_CD',
+            'm.MODEL_LINE',
+            'm.MOD_LIN_SPECIFY',
+            'v.BASIS_NUMBER',
+            'v.REGISTER_NUMBER',
+            'v.CHASSIS_NUMBER',
+            'u.ECC_STATUS',
+            's.SPECIFY'
+        ])
+        ->paginate($request->get('per_page', 10));
+
+        // UTF‑8-Konvertierung der Daten
+        $vehicles->getCollection()->transform(function ($item) {
+            foreach ($item as $key => $value) {
                 if (is_string($value)) {
-                    $value = trim($value);
+                    $item->$key = trim(mb_convert_encoding($value, 'UTF-8', 'auto'));
                 }
-            });
-            return $vehicleArray;
+            }
+            return $item;
         });
 
-        return $trimmedVehicles->isNotEmpty() 
-            ? response()->json($trimmedVehicles, 200, [], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_IGNORE)
-            : response()->json(['error' => 'Not found'], 404);
+        // Filteroptionen für q‑selects
+        $groupedColumns = [
+            'MAKE_CD'    => Vehicle::distinct('MAKE_CD')->orderBy('MAKE_CD')->pluck('MAKE_CD'),
+            'ECC_STATUS' => DB::connection('odbc_intern')->table('UNIT_FILE')->distinct('ECC_STATUS')->pluck('ECC_STATUS')->sortDesc(),
+        ];
 
+        return response()->json([
+            'vehicles'         => $vehicles,
+            'grouped_columns'  => $groupedColumns,
+        ], 200, [], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_IGNORE);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+    // public function index(Request $request)
+    // {
+    //     $vehicles = Vehicle::query()
+    //         ->from('VEHICLE as v')
+    //         ->join('UNIT_FILE as u', 'u.BASIS_NUMBER', '=', 'v.BASIS_NUMBER')
+    //         ->join('vPP5L as s', 'u.ECC_STATUS', '=', 's.CAR_STATUS')
+    //         ->join('vPP5Q as m', function($join) {
+    //             $join->on('v.MODEL_LINE', '=', 'm.MODEL_LINE')
+    //                 ->on('v.MAKE_CD', '=', 'm.MAKE_CD');
+    //         })
+    //         // ->where('u.CAR_CREATION_DATE', '>', '2023-01-01')
+    //         ->where('m.MAKE_CD', '>', 'OP')
+    //         ->select([
+    //             'm.MAKE_CD',
+    //             'm.MODEL_LINE',
+    //             'm.MOD_LIN_SPECIFY',
+    //             'v.BASIS_NUMBER',
+    //             'v.REGISTER_NUMBER',
+    //             'v.CHASSIS_NUMBER',
+    //             'u.ECC_STATUS',
+    //             's.SPECIFY'
+    //         ])
+    //         ->paginate($request->get('per_page', 10));
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+    //     // Alle Werte rekursiv auf UTF-8 konvertieren (wegen ODBC!)
+    //     $vehicles->getCollection()->transform(function ($item) {
+    //         foreach ($item as $key => $value) {
+    //             if (is_string($value)) {
+    //                 $item->$key = mb_convert_encoding($value, 'UTF-8', 'auto');
+    //             }
+    //         }
+    //         return $item;
+    //     });
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Vehicle $vehicle)
-    {
-        //
-    }
+    //     $groupedColumns = [
+    //         'MAKE_CD' => Vehicle::distinct('MAKE_CD')->pluck('MAKE_CD'),
+    //         // 'model_line' => Vehicle::distinct('MODEL_LINE')->pluck('MODEL_LINE'),
+    //     ];
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Vehicle $vehicle)
-    {
-        //
-    }
+    //     $data = [
+    //         'vehicles' => $vehicles,
+    //         'grouped_columns' => $groupedColumns,
+    //     ];
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Vehicle $vehicle)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Vehicle $vehicle)
-    {
-        //
-    }
+    //     // return response()->json($vehicles, 200, [], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_IGNORE);
+    //     return response()->json($data, 200, [], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_IGNORE);
+    // }
 }
