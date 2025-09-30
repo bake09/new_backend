@@ -40,3 +40,11 @@ Broadcast::channel('roles.{roleId}', function (User $user, $roleId) {
 
 //     return $user->hasRole($role->name);
 // });
+
+Broadcast::channel('activities', function (User $user) {
+    // Simple: jeder eingeloggte User darf den Kanal abonnieren
+    return $user !== null;
+
+    // Oder: nur Admins
+    // return $user->hasRole('admin');
+});

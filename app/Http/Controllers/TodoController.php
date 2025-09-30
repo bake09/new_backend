@@ -19,6 +19,7 @@ use App\Http\Resources\TodoResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
+use App\Events\ActivityCreated;
 
 class TodoController extends Controller
 {
@@ -59,6 +60,12 @@ class TodoController extends Controller
         // $request->user()->notify(new TodoCreated($todo));
         
         broadcast(new TodoSend($todo->load('user')))->toOthers();
+        $activity = activity()
+            ->causedBy(Auth::user())
+            ->performedOn($todo)
+            ->withProperties(['item' => $todo->content, 'causer' => Auth::user()->name, 'action' => ['type' => 'created']])
+            ->log("Neu-Erstellung des Todos's : " . $todo->content . " von " . Auth::user()->name);
+        event(new \App\Events\ActivityCreated($activity));
 
         return new TodoResource($todo->load('user'));
     }
@@ -82,6 +89,14 @@ class TodoController extends Controller
 
         $todo->update($request->only(['content', 'done', 'due_date']));
         TodoToggle::dispatch($todo->load('user'));
+        
+        $activity = activity()
+            ->causedBy(Auth::user())
+            ->performedOn($todo)
+            ->withProperties(['item' => $todo->content, 'causer' => Auth::user()->name, 'action' => ['type' => 'updated']])
+            ->log("Neu-Erstellung des Todos's : " . $todo->content . " von " . Auth::user()->name);
+        event(new \App\Events\ActivityCreated($activity));
+        
 
         return new TodoResource($todo);
     }
@@ -92,6 +107,12 @@ class TodoController extends Controller
         
         $todo->delete();
         broadcast(new TodoDelete($todo))->toOthers();
+        $activity = activity()
+            ->causedBy(Auth::user())
+            ->performedOn($todo)
+            ->withProperties(['item' => $todo->content, 'causer' => Auth::user()->name, 'action' => ['type' => 'deleted']])
+            ->log("Neu-Erstellung des Todos's : " . $todo->content . " von " . Auth::user()->name);
+        event(new \App\Events\ActivityCreated($activity));
 
         return response()->json($todo, 204);
     }
@@ -109,6 +130,12 @@ class TodoController extends Controller
         ]);
         
         TodoToggle::dispatch($todo->load('user'));
+        $activity = activity()
+            ->causedBy(Auth::user())
+            ->performedOn($todo)
+            ->withProperties(['item' => $todo->content, 'causer' => Auth::user()->name, 'action' => ['type' => 'toggeled', 'done' => $request->done]])
+            ->log("Status-Änderung des Todos's : " . $todo->content . " von " . Auth::user()->name);
+        event(new ActivityCreated($activity));
 
         return $todo->load('user');
     }

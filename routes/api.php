@@ -1,25 +1,27 @@
 <?php
 
+use App\Models\Todo;
+
 use App\Models\User;
-
 use App\Models\Vehicle;
-use App\Models\Customer;
 
+use App\Models\Customer;
 use Illuminate\Http\Request;
 use App\Notifications\TodoCreated;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Contracts\Role;
+use App\Http\Controllers\CdrController;
+
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TodoController;
-
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ImageController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\StarfaceRestController;
 use App\Http\Controllers\Auth\AuthTokenController;
 use App\Http\Controllers\NotificationManagerController;
-use App\Models\Todo;
 
 
 function utf8_fit($v) {
@@ -65,12 +67,25 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Vehicle
     Route::apiResource('vehicle', VehicleController::class);
+    Route::get('purchdiscounts', [VehicleController::class, 'purchdiscounts']);
+    Route::get('purchdisctype', [VehicleController::class, 'purchdisctypes']);
+    Route::get('doublepurchdisctype', [VehicleController::class, 'doublepurchdisctype']);
+
+    // CDR
+    Route::get('cdr', [CdrController::class, 'index']);
+    Route::get('sf-rest', [CdrController::class, 'login']);
+    Route::get('sf-users', [CdrController::class, 'getSFUsers']);
+
+    Route::post('cdr-reports', [CdrController::class, 'createCDRreports']);
 });
 
 Route::prefix('auth/token')->group(function () {
     // Auth
     Route::post('/login', [AuthTokenController::class, 'login']);
     Route::post('/register', [AuthTokenController::class, 'register']);
+    
+    Route::post('/forgot-password', [AuthTokenController::class, 'sendResetLink']);
+    Route::post('/reset-password', [AuthTokenController::class, 'resetPassword']);
 });
 
 Route::get('test', function() {
@@ -90,13 +105,11 @@ Route::get('findappointment', function(){
 });
 
 Route::post('/check-email', function(Request $request) {
-
     $request->validate([
         'email' => 'required|email'
     ]);
 
     $email = trim($request->email);
-
     $customers = Customer::select([
             'CUSTOMER_NUMBER',
             'TITLE',
@@ -115,3 +128,6 @@ Route::post('/check-email', function(Request $request) {
 
         return response()->json(utf8_fit($data), 200, [], JSON_UNESCAPED_UNICODE);
 });
+
+// Export TEST
+Route::get('/export-users', [UserController::class, 'export']);

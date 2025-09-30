@@ -59,6 +59,7 @@ return [
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                PDO::MYSQL_ATTR_LOCAL_INFILE => true,
             ]) : [],
         ],
 
@@ -112,19 +113,30 @@ return [
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
 
+        // 'odbc_intern' => [
+        //     'driver'   => 'odbc',
+        //     'dsn'      => env('ODBC_DSN_STRING_PHP8'),
+        //     'database' => env('ODBC_DATABASE'),
+        //     'username' => env('ODBC_USER'),
+        //     'password' => env('ODBC_PASSWORD'),
+        //     'charset' => 'utf8',
+        //     'collation' => 'utf8_unicode_ci', // NEU 24.02.2025
+        //     'grammar' => [
+        //         'query'  => Illuminate\Database\Query\Grammars\SqlServerGrammar::class,
+        //         'schema' => Illuminate\Database\Schema\Grammars\SqlServerGrammar::class,
+        //     ],
+        // ],
         'odbc_intern' => [
-            'driver'   => 'odbc',
-            'dsn'      => env('ODBC_DSN_STRING_PHP8'),
-            'database' => env('ODBC_DATABASE'),
+            'driver'   => 'sqlsrv',
+            'host'     => env('ODBC_HOST', '10.1.68.30'),
+            'port'     => 1433,
+            'database' => env('ODBC_DATABASE', 'deop01'),
             'username' => env('ODBC_USER'),
             'password' => env('ODBC_PASSWORD'),
+            'TrustServerCertificate' => true,
+            'Encrypt' => true,
             'charset' => 'utf8',
-            'collation' => 'utf8_unicode_ci', // NEU 24.02.2025
-            'grammar' => [
-                'query'  => Illuminate\Database\Query\Grammars\SqlServerGrammar::class,
-                'schema' => Illuminate\Database\Schema\Grammars\SqlServerGrammar::class,
-            ],
-        ],
+        ]
 
     ],
 

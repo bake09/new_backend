@@ -3,9 +3,16 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Models\User;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\Validator;
 
 class AuthTokenController extends Controller
@@ -84,5 +91,75 @@ class AuthTokenController extends Controller
         return response()->json([
             'message' => 'Logged out'
         ], 200);
+    }
+
+    public function sendResetLink(Request $request)
+    {
+
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $email = $request->email;
+
+        // 1️⃣ Token generieren
+        $token = Str::random(64);
+
+        // 2️⃣ Token in password_resets speichern
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $email],
+            [
+                'email' => $email,
+                'token' => bcrypt($token), // Laravel speichert hashed
+                'created_at' => Carbon::now()
+            ]
+        );
+
+        // 3️⃣ URL selbst zusammenbauen
+        $resetUrl = config('app.frontend_url') . '/reset-password/?token=' . $token . '&email=' . urlencode($email);
+
+        // 4️⃣ Mail selbst verschicken
+        Mail::send('emails.password_reset', ['url' => $resetUrl], function($message) use ($email) {
+            $message->to($email);
+            $message->subject('Passwort zurücksetzen');
+        });
+
+        return response()->json(['message' => 'Reset-Link wurde gesendet.'], 200);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'token' => 'required',
+            'email' => 'required|email|exists:users,email',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $status = Password::reset(
+            $validator->validated(),
+            function ($user, $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password)
+                ])->setRememberToken(Str::random(60));
+
+                $user->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+
+        if ($status === Password::PASSWORD_RESET) {
+            return response()->json(['message' => __($status)], 200);
+        }
+
+        return response()->json(['message' => __($status)], 400);
     }
 }

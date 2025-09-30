@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Exports\UsersExport;
 use Illuminate\Http\Request;
 use App\Http\Resources\UserResource;
+use Maatwebsite\Excel\Facades\Excel;
 use App\Events\RolePermissionsUpdated;
 
 class UserController extends Controller
@@ -61,5 +63,10 @@ class UserController extends Controller
             'message' => 'Role assigned successfully',
             'user' => new UserResource($user)
         ]);
+    }
+
+    public function export() 
+    {
+        return Excel::download(new UsersExport, 'users.xlsx');
     }
 }
