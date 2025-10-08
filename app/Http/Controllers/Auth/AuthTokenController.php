@@ -120,7 +120,7 @@ class AuthTokenController extends Controller
         );
 
         // 3️⃣ URL selbst zusammenbauen
-        $resetUrl = config('app.frontend_url') . '/reset-password/?token=' . $token . '&email=' . urlencode($email);
+        $resetUrl = config('app.frontend_url') . '/auth/reset-password/?token=' . $token . '&email=' . urlencode($email);
 
         // 4️⃣ Mail selbst verschicken
         Mail::send('emails.password_reset', ['url' => $resetUrl], function($message) use ($email) {
