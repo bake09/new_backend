@@ -56,6 +56,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('team', TeamController::class);
     Route::post('roles/{role}/permissions', [PermissionController::class, 'assignPermissions']);
     Route::delete('roles/{role}/permissions/{permission}', [PermissionController::class, 'removePermission']);
+    Route::post('roles/{role}/syncPermissions', [PermissionController::class, 'syncPermissionsToRole']);
 
     // NEW
     Route::post('addPermission', [PermissionController::class, 'addPermission']);

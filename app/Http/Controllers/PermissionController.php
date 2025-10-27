@@ -185,5 +185,20 @@ class PermissionController extends Controller
             'message' => 'Permission created successfully!',
             'permission' => $permission,
         ], 201);
+    }
+
+    public function syncPermissionsToRole(Request $request, Role $role)
+    {
+        $permissionNames = collect($request->permissions)->pluck('name');
+
+        // Berechtigungen synchronisieren
+        $role->syncPermissions($permissionNames);
+
+        broadcast(new RolePermissionsUpdated($role))->toOthers();
+
+        return response()->json([
+            'message' => 'Permissions synchronized successfully!',
+            'role' => $role->load('permissions'),
+        ]);
     }   
 }

@@ -2,7 +2,6 @@
 
 use App\Models\User;
 use Spatie\Permission\Models\Role;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Broadcast;
 
 // Broadcast::routes(["prefix" => "api", "middleware" => ["auth:sanctum"]]);
