@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Http\Resources\UserResource;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Events\RolePermissionsUpdated;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -41,10 +42,11 @@ class UserController extends Controller
 
     public function assignRole(Request $request, User $user)
     {
-        $role = $request->input('role');
-        // return $user;
+        // $role = $request->input('role');
         
         $roleId = $request->input('role');
+        $role = Role::find($roleId);
+        // return $role;
 
         // Alle Rollen entfernen
         $user->roles()->detach();
